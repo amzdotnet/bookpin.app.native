@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { environment } from '../constants/environment';
+import { View } from 'react-native'; // ✅ Import View
 
 // Create an axios instance (similar to Angular's HttpClient)
 const api = axios.create({
@@ -8,7 +9,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // Add timeout to prevent hanging requests
+  timeout: 30000, // Add timeout to prevent hanging requests
 });
 
 
@@ -107,6 +108,7 @@ export const doLogin = async (resource) => {
     const data = await api.post('/api/auth/user', resource);
     console.log('Full backend response structure:', data);
     
+    const { token } = data; // ✅ Get token from response
     // Use the exact field names from Angular response (lowercase)
     if (data.token) {
       try {
@@ -120,6 +122,7 @@ export const doLogin = async (resource) => {
         return { 
           success: true, 
           message: 'Welcome to Book Pin!',
+          token: token  // ✅ Send token back to LoginScreen
         };
       } catch (storageError) {
         console.error('AsyncStorage error:', storageError);
@@ -181,7 +184,7 @@ export const getUserData = async () => {
 // Check server connection
 export const checkServerConnection = async () => {
   try {
-    const response = await axios.get(`${environment.basePath}/api/auth/health`, {
+    const response = await api.get(`/api/auth/health`, {
       timeout: 5000
     });
     return { 

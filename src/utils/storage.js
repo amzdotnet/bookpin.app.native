@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { api } from "../services/authService";
 
 
 const ITEMS_KEY = '@saved_items';
@@ -17,6 +18,7 @@ const ITEMS_KEY = '@saved_items';
 // };
 
 export const saveItem = async (item) => {
+  debugger
   var itemA = item;
   const token = await AsyncStorage.getItem('cygnus.token');
   try {
@@ -34,7 +36,12 @@ export const saveItem = async (item) => {
       console.error('❌ Failed to save item:', response.status, errorText);
       return false;
     }
-
+    if (response.data) {
+      const existingItems = await getItems(); // purane items lo AsyncStorage se
+      const newItems = [...existingItems, response.data]; // naye item ko add karo
+      await AsyncStorage.setItem(ITEMS_KEY, JSON.stringify(newItems)); // phir save karo wapas AsyncStorage mein
+      console.log('Local storage updated with new item.');
+    }
 
     console.log('Item saved to API:');
     return true;
@@ -43,6 +50,34 @@ export const saveItem = async (item) => {
     return false;
   }
 };
+
+// export const saveItem = async (item) => {
+//   try {
+//     debugger;
+//     const response = await api.post(
+//       '/api/usertag/post-user-tag',
+//       item // token aur headers automatic set ho jayein ge
+//     );
+
+//     // if (response.status !== 200) {
+//     //   console.error('❌ Failed to save item:', response.status);
+//     //   return false;
+//     // }
+//     if (!response?.data?.status) {
+//       console.error('❌ Failed to save item:', response);
+//       return false;
+//     }
+
+//     console.log('✅ Item saved to API.');
+//     return true;
+//   } catch (error) {
+//     debugger;
+//     console.error('❌ API Error:', error.message || error);
+//     return false;
+//   }
+// };
+
+
 
 
 export const getItems = async () => {

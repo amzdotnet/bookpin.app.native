@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+// import axios from 'axios';
+import { api } from "../services/authService";
 import {
   View,
   Text,
@@ -16,25 +17,39 @@ const HomeScreen = () => {
   const navigation = useNavigation();
 
 
-  const loadActiveTags = useCallback(async () => {
-    setGridLoading(true);
-    try {
-        debugger
-        const token = await AsyncStorage.getItem('cygnus.token');
-    const response = await axios.get('http://10.0.2.2:5118/api/tag/get-all-active-tag', {
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  },
-});
-      setRoleList(response.data.tagDtoList); 
-      // const res = await getTagsActive();
-      // const roles = res.data.tagDtoList || [];
-      // setRoleList(roles);
-    } finally {
-      setGridLoading(false);
-    }
-  }, []);
+//   const loadActiveTags = useCallback(async () => {
+//     setGridLoading(true);
+//     try {
+//         debugger
+//         const token = await AsyncStorage.getItem('cygnus.token');
+//     const response = await api.get('http://10.0.2.2:5118/api/tag/get-all-active-tag', {
+//   headers: {
+//     'Content-Type': 'application/json',
+//     'Authorization': `Bearer ${token}`,
+//   },
+// });
+//       setRoleList(response.data.tagDtoList); 
+//       // const res = await getTagsActive();
+//       // const roles = res.data.tagDtoList || [];
+//       // setRoleList(roles);
+//     } finally {
+//       setGridLoading(false);
+//     }
+//   }, []);
+
+const loadActiveTags = useCallback(async () => {
+  setGridLoading(true);
+  try {
+    const response = await api.get('/api/tag/get-all-active-tag');
+    console.log('API tag response:', response); // Add this for debugging
+    setRoleList(response.tagDtoList); 
+  } catch (error) {
+    console.error('Failed to load tags:', error);
+  } finally {
+    setGridLoading(false);
+  }
+}, []);
+
 
 
 

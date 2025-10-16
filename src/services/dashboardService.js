@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { api } from "../services/authService";
 // const BASE_URL = import.meta.env.VITE_API_URL
 // import { API_URL } from '@env'; // ✅ Make sure this matches your .env variable
 
@@ -6,20 +7,10 @@ import axios from 'axios'
 
 // export const getActiveTag = (data) => axios.get(`${BASE_URL}/api/tag/get-all-active-tag`, data)
 
-export const getActiveTag = (token) => {
-  return axios.get(`http://10.0.2.2:5118/api/tag/get-all-active-tag`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+export const getActiveTag = () => {
+  return api.get(`/api/tag/get-all-active-tag`);
 };
 
-export const getUserTagByTagID = (tagID, token) => {
-  return axios.get(`http://10.0.2.2:5118/api/tag/get-all-user-tag-id/${tagID}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+export const getUserTagByTagID = (tagID) => {
+  return api.get(`/api/tag/get-all-user-tag-id/${tagID}`);
 };

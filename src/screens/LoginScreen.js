@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { doLogin } from '../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const [id, setId] = useState('');
@@ -14,6 +15,7 @@ const LoginScreen = ({ navigation }) => {
     if (!id || !password) {
       Toast.show({ type: 'error', text1: 'ID and Password are required' });
       return;
+      
     }
 
     setLoading(true);
@@ -24,6 +26,9 @@ const LoginScreen = ({ navigation }) => {
     setLoading(false);
 
     if (result.success) {
+      // ✅ Save token and login time
+      await AsyncStorage.setItem('cygnus.token', result.token); // assuming result.token is returned
+      await AsyncStorage.setItem('loginTime', Date.now().toString());
       console.log('Navigating to Dashboard'); // Debug log
        navigation.replace('Dashboard');  // 👈 updated
       Toast.show({ type: 'success', text1: result.message });
@@ -81,7 +86,8 @@ const LoginScreen = ({ navigation }) => {
         disabled={loading}
       />
       
-      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+     {loading ? <ActivityIndicator size="large" color="#0000ff" /> : null}
+
       
       <TouchableOpacity onPress={handleForgotPassword}>
         <Text style={styles.forgot}>Forgot Password?</Text>

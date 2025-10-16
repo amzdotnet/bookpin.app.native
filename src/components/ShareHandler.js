@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import ShareMenu from 'react-native-share-menu';
 import { useShare } from '../context/ShareContext';
+import { View } from 'react-native'; // ✅ Import View
 
 const ShareHandler = () => {
   const { updateSharedData } = useShare();

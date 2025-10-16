@@ -22,7 +22,7 @@ import { api } from "../services/authService";
 const ShareScreen = ({ navigation }) => {
   // const [tag, setTag] = useState("image");
   const [tags, setTags] = useState([]);
-  const [tag, setTag] = useState('');
+  const [tag, setTag] = useState("0");
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -45,17 +45,64 @@ const ShareScreen = ({ navigation }) => {
   //     }
   //   }
   // }, [sharedData]);
-  useEffect(() => {
-  const fetchTags = async () => {
-    try {
-      // Token ka manual fetching aur header set karna zaruri nahi agar interceptor sahi se token laga raha hai
-      const token = await AsyncStorage.getItem('token'); 
+//   useEffect(() => {
+//   const fetchTags = async () => {
+//     try {
+//       // Token ka manual fetching aur header set karna zaruri nahi agar interceptor sahi se token laga raha hai
+//       // const token = await AsyncStorage.getItem('token'); 
 
-      const response = await api.get('/api/tag/get-all-active-tag');
+//       // const response = await api.get('/api/tag/get-all-active-tag');
+//       const token = await AsyncStorage.getItem('token');
+
+// const response = await api.get('/api/tag/get-all-active-tag', {
+//   headers: {
+//     Authorization: `Bearer ${token}`
+//   }
+// });
+
       
 
-      setTags(response.tagDtoList); // Directly use karo, kyunki interceptor ne response simplify kar diya hai
+//       setTags(response.tagDtoList); // Directly use karo, kyunki interceptor ne response simplify kar diya hai
+//       setLoading(false);
+//     } catch (error) {
+//       console.error('Failed to fetch tags:', error);
+//       setLoading(false);
+//       if (fetchedTags.length > 0) {
+//         const defaultId = fetchedTags[0]._id || fetchedTags[0].id;
+//         setTag(defaultId.toString());
+//       }
+//     }
+//   };
+
+//   fetchTags();
+// }, []);
+
+useEffect(() => {
+  const fetchTags = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await api.get('/api/tag/get-all-active-tag', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log('API Response:', response);
+      console.log('Tag List:', response.tagDtoList);
+
+      console.log('First Tag:', response.tagDtoList[0]);
+      setTags(response.tagDtoList);
       setLoading(false);
+
+      // Safe check for id/_id
+      if (response.tagDtoList && response.tagDtoList.length > 0) {
+        const firstTag = response.tagDtoList[0];
+        const defaultId = firstTag.tagID;
+        if (defaultId) {
+          setTag(defaultId.toString());
+        } else {
+          setTag("0");
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch tags:', error);
       setLoading(false);
@@ -102,10 +149,17 @@ const uriToBase64 = async (uri) => {
   }
 };
 const handleSave = async () => {
+  console.log("Current tag value:", tag); // Add this line
+  debugger;
   if (!name.trim()) {
     Alert.alert("Error", "Please enter a name");
     return;
   }
+  if (tag === "0") {
+    Alert.alert("Error", "Please select a tag");
+    return;
+  }
+
 
   if (!sharedData) {
     Alert.alert("Error", "No shared content to save");
@@ -121,9 +175,9 @@ const handleSave = async () => {
 
   const newItem = {
     id: Date.now().toString(),
-    tag,
+    tagID: parseInt(tag),
     name: name.trim(),
-    description: description.trim(),
+    desc: description.trim(),
     Screenshot: base64Data, // ✅ base64 image
     date: new Date().toISOString(),
     sharedData: base64Data,
@@ -131,6 +185,9 @@ const handleSave = async () => {
     FileBase64: base64Data,
     FileName: sharedData.fileName || "screenshot.png",
   };
+
+  debugger;
+  console.log("Saving Item:", newItem); // 👈 yahan pe
 
   const success = await saveItem(newItem);
 
@@ -201,76 +258,43 @@ const handleSave = async () => {
 
         {renderSharedContent()}
 
-        {/* <Text style={styles.label}>Select Tag</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={tag}
-            onValueChange={(itemValue) => setTag(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Image" value="image" />
-            <Picker.Item label="Text" value="text" />
-            <Picker.Item label="Link" value="link" />
-            <Picker.Item label="Other" value="other" />
-          </Picker>
-        </View> */}
+       
 
         <View style={styles.container}>
   <Text style={styles.label}>Select Tag</Text>
   <View style={styles.pickerContainer}>
-    {loading && (
-      <Text style={styles.loadingText}>Loading tags...</Text>
-    )}
+   {loading ? (
+  <Text style={styles.loadingText}>Loading tags...</Text>
+) : null}
 
-    {!loading && (
-      <Picker
-        selectedValue={tag}
-        onValueChange={(itemValue) => setTag(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label=" Select Tag " value="" />
-        {
-          tags.map((item) => (
-            <Picker.Item
-              key={item._id || item.id}
-              label={item.name}
-              value={item.value || item.name.toLowerCase()}
-            />
-          ))
-        }
-      </Picker>
-    )}
+
+    {!loading ? (
+    <Picker
+  selectedValue={tag}
+  onValueChange={(itemValue) => {
+    setTag(itemValue);
+    console.log('Selected Tag ID:', itemValue);
+  }}
+  style={styles.picker}
+>
+  <Picker.Item label="Select Tag" value="0" />
+  {tags.map((item) => (
+    <Picker.Item
+      key={item.tagID}
+      label={item.name}
+      value={item.tagID?.toString()}
+    />
+  ))}
+</Picker>
+
+
+) : null}
+
   </View>
 </View>
 
 
-        {/* <View style={styles.container}>
-      <Text style={styles.label}>Select Tag</Text>
-      <View style={styles.pickerContainer}>
-        {
-          loading ? (
-            <Text>Loading tags...</Text>
-          ) : (
-            <Picker
-              selectedValue={tag}
-              onValueChange={(itemValue) => setTag(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label=" Select Tag " value="" />
-              {
-                tags.map((item) => (
-                  <Picker.Item
-                    key={item._id || item.id}
-                    label={item.name}
-                    value={item.value || item.name.toLowerCase()}
-                  />
-                ))
-              }
-            </Picker>
-          )
-        }
-      </View>
-    </View> */}
+       
 
 
         <Text style={styles.label}>Name</Text>

@@ -35,8 +35,10 @@ const TagInformation = ({ route }) => {
     setLoading(true);
     const token = await AsyncStorage.getItem('cygnus.token');
     const res = await getUserTagByTagID(id, token);
-    const userTags = res.data.userTagDtoList || [];
+    console.log('API Response for tag:', res);  // <-- yaha dekho response
+    const userTags = res.userTagDtoList || [];
     setUserTagList(userTags);
+    console.log('UserTagList:', userTags);  // <-- yaha dekho jo set ho raha hai
   } catch (error) {
     console.error('Error fetching tag:', error);
   } finally {
@@ -70,7 +72,8 @@ const TagInformation = ({ route }) => {
             {item.link}
           </Text>
         ) : (
-          'No Link Found'
+          // 'No Link Found'
+          <Text style={styles.text}>No Link Found</Text>
         )}
       </Text>
 
@@ -95,11 +98,12 @@ const TagInformation = ({ route }) => {
         {item.isActive ? 'Active ✅' : 'Inactive ❌'}
       </Text>
 
-      {item.fileBase64 && (
-        <TouchableOpacity onPress={() => Linking.openURL(item.fileBase64)}>
-          <Image source={{ uri: item.fileBase64 }} style={styles.image} />
-        </TouchableOpacity>
-      )}
+    {item.fileBase64 ? (
+  <TouchableOpacity onPress={() => Linking.openURL(item.fileBase64)}>
+    <Image source={{ uri: item.fileBase64 }} style={styles.image} />
+  </TouchableOpacity>
+) : null}
+
     </View>
   );
 
